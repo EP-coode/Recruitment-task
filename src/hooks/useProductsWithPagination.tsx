@@ -1,33 +1,43 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FetchStatus } from "../common/fetchStatus";
 import { NotFound } from "../errors/NotFound";
 import { Pagination } from "../model/Pagination";
 import { Product } from "../model/Product";
 import { IProductRepository } from "../repositories/IProductRepository";
 import { useSearchParams } from "react-router-dom";
+import { parsePage } from "../utils/parseParams";
+import { debounce } from "../utils/debounce";
 
-const DEFAULT_POST_PER_PAGE = 5;
+const DEFAULT_PRODUCT_PER_PAGE = 5;
+const DEFAULT_PAGE = 1;
 
 export const useProductsWithPagination = (
   poductsRepo: IProductRepository,
   postPerPage: number
 ) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialPage = parseInt(searchParams.get("page") ?? "");
 
   const [idFilter, setIdFilter] = useState(searchParams.get("id") ?? "");
   const [currentPage, setCurrentPage] = useState(
-    isNaN(initialPage) ? 1 : Math.max(initialPage, 1)
+    parsePage(searchParams.get("page"), DEFAULT_PAGE)
   );
 
   const [productsWithPagination, setPorductsWithPagination] =
     useState<Pagination<Product> | null>(null);
-  postPerPage = postPerPage <= 1 ? DEFAULT_POST_PER_PAGE : postPerPage;
+  postPerPage = postPerPage <= 1 ? DEFAULT_PRODUCT_PER_PAGE : postPerPage;
 
   const [fetchStatus, setFetchStatus] = useState(FetchStatus.IDDLE);
 
+
+  const debouncedSetIdFilter = useCallback(
+    debounce((filterId: string) => {
+      setIdFilter(filterId);
+    }, 800),
+    []
+  );
+
   const handleFilterChange = (idFilter: string) => {
-    setIdFilter(idFilter);
+    debouncedSetIdFilter(idFilter);
   };
 
   useEffect(() => {

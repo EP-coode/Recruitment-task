@@ -10,9 +10,15 @@ const PRODUCT_SERVICE_ENDPOINT = "https://reqres.in/api/products";
 export const productRepository: IProductRepository = {
   getProductById: async function (id: number): Promise<Product> {
     const requestRes = await fetch(`${PRODUCT_SERVICE_ENDPOINT}/${id}`);
+
     if (requestRes.status == 404) {
       throw new NotFound();
     }
+
+    if (!requestRes.ok) {
+      throw new Error();
+    }
+
     const data = await requestRes.json();
     return data.data as Promise<Product>;
   },
@@ -23,9 +29,15 @@ export const productRepository: IProductRepository = {
     const requestRes = await fetch(
       `${PRODUCT_SERVICE_ENDPOINT}?page=${page}&per_page=${per_page}`
     );
+
     if (requestRes.status == 404) {
       throw new NotFound();
     }
+
+    if (!requestRes.ok) {
+      throw new Error();
+    }
+    
     const data = (await requestRes.json()) as Promise<Pagination<Product>>;
     return data;
   },

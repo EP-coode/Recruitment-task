@@ -11,7 +11,7 @@ import PaginationPicker from "./PaginationPicker";
 const ROWS_PER_PAGE = 5;
 const idFilterMatcher = new RegExp("^([1-9][0-9]*)$", "gm");
 
-export default function ProductsTable() {
+export default function ProductsTable({ className }: { className?: string }) {
   const {
     products,
     currentPage,
@@ -19,16 +19,19 @@ export default function ProductsTable() {
     setCurrentPage,
     setIdFilter,
     fetchStatus,
-    idFilter
+    idFilter,
   } = useProductsWithPagination(productRepository, ROWS_PER_PAGE);
   const [idFilterFieldValue, setIdFilterFieldValue] = useState(idFilter);
   const modalContext = useContext(ModalContext);
+  const noData =
+    fetchStatus == FetchStatus.NOT_FOUND ||
+    (fetchStatus == FetchStatus.OK && products?.length == 0);
 
   const handleChangePage = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
-  const onDetailsClick = (product: Product) => {
+  const handleDetailsClick = (product: Product) => {
     modalContext.setupModal(
       `Details of product id: ${product.id}`,
       product,
@@ -43,22 +46,14 @@ export default function ProductsTable() {
     const match = newValue.match(idFilterMatcher);
     if (match || newValue.length == 0) {
       setIdFilterFieldValue(newValue);
+      setIdFilter(newValue);
     }
   };
 
-  const debouncedSetIdFilter = useCallback(
-    debounce((filterId: string) => {
-      setIdFilter(filterId);
-    }, 800),
-    []
-  );
-
-  useEffect(() => {
-    debouncedSetIdFilter(idFilterFieldValue);
-  }, [idFilterFieldValue]);
-
   return (
-    <div className="overflow-x-auto min-h-[26rem] min-w-fit flex flex-col justify-between items-center">
+    <div
+      className={`overflow-x-auto min-h-[26rem] min-w-fit flex flex-col justify-between items-center ${className}`}
+    >
       <table className="table table-auto w-full">
         <thead>
           <tr>
@@ -69,7 +64,7 @@ export default function ProductsTable() {
                 type="text"
                 min={1}
                 placeholder="Fiter by id"
-                className="input input-sm input-bordered w-full"
+                className="input input-sm input-bordered max-w-[6rem]"
                 onChange={handleIdFilterChange}
               />
             </th>
@@ -87,7 +82,7 @@ export default function ProductsTable() {
                   style={{ backgroundColor: color }}
                   className="cursor-pointer hover:brightness-90"
                   key={id}
-                  onClick={() => onDetailsClick(product)}
+                  onClick={() => handleDetailsClick(product)}
                 >
                   <th className="bg-inherit text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
                     {id}
@@ -108,18 +103,17 @@ export default function ProductsTable() {
               </td>
             </tr>
           )}
-          {(fetchStatus == FetchStatus.NOT_FOUND ||
-            (fetchStatus == FetchStatus.OK && products?.length == 0)) && (
+          {noData && (
             <tr>
-              <td className="h-64 text-center" colSpan={4}>
-                NO DATA FOUND
+              <td className="h-64 text-center uppercase" colSpan={4}>
+                no data found
               </td>
             </tr>
           )}
           {fetchStatus == FetchStatus.ERROR && (
             <tr>
-              <td className="h-64 text-center" colSpan={4}>
-                SOMETHING WENT WRONG
+              <td className="h-64 text-center uppercase" colSpan={4}>
+                something went wrong
               </td>
             </tr>
           )}
