@@ -36,7 +36,7 @@ export default function ProductsTable({ className }: { className?: string }) {
 
   const handleDetailsClick = (product: Product) => {
     modalContext.setupModal(
-      `Details of product id: ${product.id}`,
+      `Details of product`,
       product,
       true
     );
