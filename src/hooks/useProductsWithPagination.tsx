@@ -1,31 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import { FetchStatus } from "../common/fetchStatus";
 import { NotFound } from "../errors/NotFound";
 import { Pagination } from "../model/Pagination";
 import { Product } from "../model/Product";
 import { IProductRepository } from "../repositories/IProductRepository";
-import { useSearchParams } from "react-router-dom";
 import { parsePage } from "../utils/parseParams";
 import { debounce } from "../utils/debounce";
 
 const DEFAULT_PRODUCT_PER_PAGE = 5;
 const DEFAULT_PAGE = 1;
 
+/*
+  In future this might be more useful as a Context
+*/
 export const useProductsWithPagination = (
   poductsRepo: IProductRepository,
   postPerPage: number
 ) => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  postPerPage = postPerPage <= 1 ? DEFAULT_PRODUCT_PER_PAGE : postPerPage;
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [idFilter, setIdFilter] = useState(searchParams.get("id") ?? "");
   const [currentPage, setCurrentPage] = useState(
     parsePage(searchParams.get("page"), DEFAULT_PAGE)
   );
-
   const [productsWithPagination, setPorductsWithPagination] =
     useState<Pagination<Product> | null>(null);
-  postPerPage = postPerPage <= 1 ? DEFAULT_PRODUCT_PER_PAGE : postPerPage;
-
   const [fetchStatus, setFetchStatus] = useState(FetchStatus.IDDLE);
 
   const debouncedSetIdFilter = useCallback(
@@ -45,14 +47,21 @@ export const useProductsWithPagination = (
     when using id (same as /product/:id).
   */
   useEffect(() => {
-    const getProdcuts = async () => {
+    let isMounted = true;
+
+    const fetchProducts = async () => {
       if (idFilter.length <= 0) {
         try {
           const porductsWithPagination =
             await poductsRepo.getProductsPagination(currentPage, postPerPage);
-          setPorductsWithPagination(porductsWithPagination);
-          setFetchStatus(FetchStatus.OK);
+            
+          if (isMounted) {
+            setPorductsWithPagination(porductsWithPagination);
+            setFetchStatus(FetchStatus.OK);
+          }
         } catch (e) {
+          if (!isMounted) return;
+
           if (e instanceof NotFound) {
             setFetchStatus(FetchStatus.NOT_FOUND);
           } else {
@@ -70,9 +79,14 @@ export const useProductsWithPagination = (
             total: 1,
             total_pages: 1,
           });
-          setFetchStatus(FetchStatus.OK);
-          setCurrentPage(1);
+
+          if (isMounted) {
+            setFetchStatus(FetchStatus.OK);
+            setCurrentPage(1);
+          }
         } catch (e) {
+          if (!isMounted) return;
+
           if (e instanceof NotFound) {
             setFetchStatus(FetchStatus.NOT_FOUND);
           } else {
@@ -82,7 +96,7 @@ export const useProductsWithPagination = (
       }
     };
     setFetchStatus(FetchStatus.LOADING);
-    getProdcuts();
+    fetchProducts();
   }, [currentPage, postPerPage, poductsRepo, idFilter]);
 
   /*

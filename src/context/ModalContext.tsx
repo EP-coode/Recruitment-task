@@ -1,11 +1,6 @@
-import React, { createContext, useEffect, useState } from "react";
-import { Product } from "../model/Product";
+import React, { createContext, useState } from "react";
 
-interface ActionBtnProps {
-  onClick: () => void;
-  label: string;
-  classNames?: string;
-}
+import { Product } from "../model/Product";
 
 export interface IModalContext {
   show: (show?: boolean) => void;
@@ -13,22 +8,18 @@ export interface IModalContext {
     title: string | null,
     porduct: Product,
     canClose: boolean,
-    actions: ActionBtnProps[]
   ) => void;
-  reset: () => void;
 }
 
 const defaultModalContext: IModalContext = {
   show: () => {},
   setupModal: () => {},
-  reset: () => {},
 };
 
 interface ModalState {
   porduct: Product | null;
   title: string | null;
   canClose?: boolean;
-  actions?: ActionBtnProps[];
 }
 
 const DEFAULT_MODAL_STATE: ModalState = {
@@ -51,12 +42,10 @@ export const ModalContextProvider = ({ children }: React.PropsWithChildren) => {
     title: string | null,
     porduct: Product,
     canClose: boolean,
-    actions: ActionBtnProps[]
   ) => {
     setModalProperites({
       ...DEFAULT_MODAL_STATE,
       title: title,
-      actions: actions,
       canClose: canClose,
       porduct: porduct,
     });
@@ -71,7 +60,6 @@ export const ModalContextProvider = ({ children }: React.PropsWithChildren) => {
     <ModalContext.Provider
       value={{
         show: handleShowModal,
-        reset: handleReset,
         setupModal: handleSetupModal,
       }}
     >
@@ -86,7 +74,7 @@ export const ModalContextProvider = ({ children }: React.PropsWithChildren) => {
           {modalProperties.canClose && (
             <label
               className="btn btn-sm btn-circle absolute right-2 top-2"
-              onClick={() => setShowModal(false)}
+              onClick={() => handleReset()}
             >
               ✕
             </label>
@@ -119,20 +107,6 @@ export const ModalContextProvider = ({ children }: React.PropsWithChildren) => {
                 </tr>
               </tbody>
             </table>
-          </div>
-          <div className="modal-action flex flex-wrap gap-2">
-            {modalProperties.actions?.map(({ onClick, label, classNames }) => (
-              <button
-                className={`btn ${classNames ?? ""}`}
-                onClick={() => {
-                  onClick();
-                  setShowModal(false);
-                }}
-                key={label}
-              >
-                {label}
-              </button>
-            ))}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+
 import ProductsTable from "../components/ProductsTable";
 import { ModalContextProvider } from "../context/ModalContext";
 

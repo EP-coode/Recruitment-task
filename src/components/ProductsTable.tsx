@@ -1,11 +1,11 @@
 import * as React from "react";
-import { useContext, useState, useEffect, useCallback } from "react";
+import { useContext, useState } from "react";
+
 import { FetchStatus } from "../common/fetchStatus";
 import { ModalContext } from "../context/ModalContext";
 import { useProductsWithPagination } from "../hooks/useProductsWithPagination";
 import { Product } from "../model/Product";
 import { productRepository } from "../repositories/ReqResApiProductRepo";
-import { debounce } from "../utils/debounce";
 import PaginationPicker from "./PaginationPicker";
 
 const ROWS_PER_PAGE = 5;
@@ -21,8 +21,11 @@ export default function ProductsTable({ className }: { className?: string }) {
     fetchStatus,
     idFilter,
   } = useProductsWithPagination(productRepository, ROWS_PER_PAGE);
+
   const [idFilterFieldValue, setIdFilterFieldValue] = useState(idFilter);
+
   const modalContext = useContext(ModalContext);
+  
   const noData =
     fetchStatus == FetchStatus.NOT_FOUND ||
     (fetchStatus == FetchStatus.OK && products?.length == 0);
@@ -35,8 +38,7 @@ export default function ProductsTable({ className }: { className?: string }) {
     modalContext.setupModal(
       `Details of product id: ${product.id}`,
       product,
-      true,
-      []
+      true
     );
     modalContext.show();
   };
