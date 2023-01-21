@@ -59,7 +59,7 @@ export default function ProductsTable({ className }: { className?: string }) {
       <table className="table table-auto w-full">
         <thead>
           <tr>
-            <th className="flex items-center gap-3 min-w-[10rem]">
+            <th className="flex items-center gap-3 min-w-[10rem] border-none">
               Id
               <input
                 value={idFilterFieldValue}
@@ -70,8 +70,8 @@ export default function ProductsTable({ className }: { className?: string }) {
                 onChange={handleIdFilterChange}
               />
             </th>
-            <th>Name</th>
-            <th>Year</th>
+            <th className="border-none">Name</th>
+            <th className="border-none">Year</th>
           </tr>
         </thead>
 
@@ -82,17 +82,17 @@ export default function ProductsTable({ className }: { className?: string }) {
               return (
                 <tr
                   style={{ backgroundColor: color }}
-                  className="cursor-pointer hover:brightness-90"
+                  className="cursor-pointer hover:brightness-90 duration-200"
                   key={id}
                   onClick={() => handleDetailsClick(product)}
                 >
-                  <th className="bg-inherit text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
+                  <th className="bg-inherit border-none text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
                     {id}
                   </th>
-                  <td className="bg-inherit text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
+                  <td className="bg-inherit border-none text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
                     {name}
                   </td>
-                  <td className="bg-inherit text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
+                  <td className="bg-inherit border-none text-transparent font-bold bg-clip-text invert grayscale contrast-[9]">
                     {year}
                   </td>
                 </tr>

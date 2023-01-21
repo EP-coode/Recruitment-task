@@ -12,12 +12,14 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <NotFound/>
-  }
+    element: <NotFound />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <div data-theme="dark">
+      <RouterProvider router={router} />
+    </div>
   </React.StrictMode>
 );
