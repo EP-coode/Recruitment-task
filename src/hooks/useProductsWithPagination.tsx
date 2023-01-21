@@ -28,7 +28,6 @@ export const useProductsWithPagination = (
 
   const [fetchStatus, setFetchStatus] = useState(FetchStatus.IDDLE);
 
-
   const debouncedSetIdFilter = useCallback(
     debounce((filterId: string) => {
       setIdFilter(filterId);
@@ -40,6 +39,11 @@ export const useProductsWithPagination = (
     debouncedSetIdFilter(idFilter);
   };
 
+  /* 
+    Idea of filtering by id is at least strange. 
+    Especialy if we have diffrent response type
+    when using id (same as /product/:id).
+  */
   useEffect(() => {
     const getProdcuts = async () => {
       if (idFilter.length <= 0) {
@@ -81,6 +85,11 @@ export const useProductsWithPagination = (
     getProdcuts();
   }, [currentPage, postPerPage, poductsRepo, idFilter]);
 
+  /*
+    This is bad becouse if we will change params somwhere 
+    else in program we may occure conflict.
+    POSSIBLE SOLLUTION: Wrap it in global context. 
+  */
   useEffect(() => {
     const params = new URLSearchParams();
     if (idFilter.length > 0) {
