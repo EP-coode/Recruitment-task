@@ -6,26 +6,27 @@ import { NotFound } from "../errors/NotFound";
 import { Pagination } from "../model/Pagination";
 import { Product } from "../model/Product";
 import { IProductRepository } from "../repositories/IProductRepository";
-import { parsePage } from "../utils/parseParams";
+import { parsePage } from "../utils/parsing";
 import { debounce } from "../utils/debounce";
 
-const DEFAULT_PRODUCT_PER_PAGE = 5;
+const DEFAULT_ITEMS_PER_PAGE = 5;
 const DEFAULT_PAGE = 1;
 
 /*
   In future this might be more useful as a Context
 */
 export const useProductsWithPagination = (
-  poductsRepo: IProductRepository,
-  postPerPage: number
+  productsRepository: IProductRepository,
+  itemsPerPage: number
 ) => {
-  postPerPage = postPerPage <= 1 ? DEFAULT_PRODUCT_PER_PAGE : postPerPage;
-
+  // params parsing/validation
+  itemsPerPage = itemsPerPage <= 1 ? DEFAULT_ITEMS_PER_PAGE : itemsPerPage;
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = parsePage(searchParams.get("page"), DEFAULT_PAGE)
+
+  // state
   const [idFilter, setIdFilter] = useState(searchParams.get("id") ?? "");
-  const [currentPage, setCurrentPage] = useState(
-    parsePage(searchParams.get("page"), DEFAULT_PAGE)
-  );
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [productsWithPagination, setPorductsWithPagination] =
     useState<Pagination<Product> | null>(null);
   const [fetchStatus, setFetchStatus] = useState(FetchStatus.IDDLE);
@@ -53,7 +54,7 @@ export const useProductsWithPagination = (
       if (idFilter.length <= 0) {
         try {
           const porductsWithPagination =
-            await poductsRepo.getProductsPagination(currentPage, postPerPage);
+            await productsRepository.getProductsPagination(currentPage, itemsPerPage);
 
           if (porductsWithPagination.total_pages < currentPage) {
             setCurrentPage(porductsWithPagination.total_pages);
@@ -75,7 +76,7 @@ export const useProductsWithPagination = (
         }
       } else {
         try {
-          const product = await poductsRepo.getProductById(parseInt(idFilter));
+          const product = await productsRepository.getProductById(parseInt(idFilter));
 
           if (isMounted) {
             setPorductsWithPagination({
@@ -101,7 +102,7 @@ export const useProductsWithPagination = (
     };
     setFetchStatus(FetchStatus.LOADING);
     fetchProducts();
-  }, [currentPage, postPerPage, poductsRepo, idFilter]);
+  }, [currentPage, itemsPerPage, productsRepository, idFilter]);
 
   /*
     This is bad becouse if we will change params somwhere 

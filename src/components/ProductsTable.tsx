@@ -6,12 +6,16 @@ import { ModalContext } from "../context/ModalContext";
 import { useProductsWithPagination } from "../hooks/useProductsWithPagination";
 import { Product } from "../model/Product";
 import { productRepository } from "../repositories/ReqResApiProductRepo";
+import { isNaturalNumberWithoutLeadingZeros } from "../utils/parsing";
 import PaginationPicker from "./PaginationPicker";
 
-const ROWS_PER_PAGE = 5;
-const idFilterMatcher = new RegExp("^([1-9][0-9]*)$", "gm");
-
-export default function ProductsTable({ className }: { className?: string }) {
+export default function ProductsTable({
+  className,
+  rowsPerPage = 5,
+}: {
+  className?: string;
+  rowsPerPage: number;
+}) {
   const {
     products,
     currentPage,
@@ -20,12 +24,12 @@ export default function ProductsTable({ className }: { className?: string }) {
     setIdFilter,
     fetchStatus,
     idFilter,
-  } = useProductsWithPagination(productRepository, ROWS_PER_PAGE);
+  } = useProductsWithPagination(productRepository, rowsPerPage);
 
   const [idFilterFieldValue, setIdFilterFieldValue] = useState(idFilter);
 
   const modalContext = useContext(ModalContext);
-  
+
   const noData =
     fetchStatus == FetchStatus.NOT_FOUND ||
     (fetchStatus == FetchStatus.OK && products?.length == 0);
@@ -35,17 +39,13 @@ export default function ProductsTable({ className }: { className?: string }) {
   };
 
   const handleDetailsClick = (product: Product) => {
-    modalContext.setupModal(
-      `Details of product`,
-      product,
-      true
-    );
+    modalContext.setupModal(`Details of product`, product, true);
     modalContext.show();
   };
 
   const handleIdFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    const match = newValue.match(idFilterMatcher);
+    const [match,_] = isNaturalNumberWithoutLeadingZeros(newValue);
     if (match || newValue.length == 0) {
       setIdFilterFieldValue(newValue);
       setIdFilter(newValue);
