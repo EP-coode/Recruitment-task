@@ -6,7 +6,7 @@ import { ModalContext } from "../context/ModalContext";
 import { useProductsWithPagination } from "../hooks/useProductsWithPagination";
 import { Product } from "../model/Product";
 import { productRepository } from "../repositories/ReqResApiProductRepo";
-import { isNaturalNumberWithoutLeadingZeros } from "../utils/parsing";
+import { isValidId } from "../utils/parsing";
 import PaginationPicker from "./PaginationPicker";
 
 export default function ProductsTable({
@@ -26,7 +26,9 @@ export default function ProductsTable({
     idFilter,
   } = useProductsWithPagination(productRepository, rowsPerPage);
 
-  const [idFilterFieldValue, setIdFilterFieldValue] = useState(idFilter);
+  const [idFilterFieldValue, setIdFilterFieldValue] = useState(
+    idFilter?.toString() ?? ""
+  );
 
   const modalContext = useContext(ModalContext);
 
@@ -43,12 +45,21 @@ export default function ProductsTable({
     modalContext.show();
   };
 
+  // TODO: it might be better to use onKeydown in future
   const handleIdFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    const [match,_] = isNaturalNumberWithoutLeadingZeros(newValue);
-    if (match || newValue.length == 0) {
+
+    const idValid = isValidId(newValue);
+    const isDeletion = newValue.length < idFilterFieldValue.length;
+
+    if (idValid || isDeletion) {
       setIdFilterFieldValue(newValue);
-      setIdFilter(newValue);
+    }
+
+    if (idValid) {
+      setIdFilter(parseInt(newValue));
+    } else {
+      setIdFilter(null);
     }
   };
 

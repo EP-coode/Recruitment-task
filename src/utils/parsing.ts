@@ -1,4 +1,8 @@
-export const parsePage = (rawPageNumber: string | null, min = 1, defaultPage = 1) => {
+export const parsePage = (
+  rawPageNumber: string | null,
+  min = 1,
+  defaultPage = 1
+) => {
   if (!rawPageNumber) {
     return defaultPage;
   }
@@ -18,15 +22,12 @@ export const parsePage = (rawPageNumber: string | null, min = 1, defaultPage = 1
 
 const natuaralNumWithoutLeadingZeros = new RegExp("^([1-9][0-9]*)$", "gm");
 
-export const isNaturalNumberWithoutLeadingZeros = (
-  rawNumber: string,
-  defaultReturn = 0
-): [boolean, number] => {
+export const isValidId = (rawNumber: string): boolean => {
   const match = rawNumber.match(natuaralNumWithoutLeadingZeros);
 
   if (match) {
-    return [true, parseInt(rawNumber)];
-  } else {
-    return [false, defaultReturn];
+    return true;
   }
+
+  return false;
 };

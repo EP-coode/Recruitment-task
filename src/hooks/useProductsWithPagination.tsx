@@ -6,7 +6,7 @@ import { NotFound } from "../errors/NotFound";
 import { Pagination } from "../model/Pagination";
 import { Product } from "../model/Product";
 import { IProductRepository } from "../repositories/IProductRepository";
-import { parsePage } from "../utils/parsing";
+import { isValidId, parsePage } from "../utils/parsing";
 import { debounce } from "../utils/debounce";
 
 const DEFAULT_ITEMS_PER_PAGE = 5;
@@ -19,26 +19,28 @@ export const useProductsWithPagination = (
   productsRepository: IProductRepository,
   itemsPerPage: number
 ) => {
-  // params parsing/validation
+  // params parsing/validatio
   itemsPerPage = itemsPerPage <= 1 ? DEFAULT_ITEMS_PER_PAGE : itemsPerPage;
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPage = parsePage(searchParams.get("page"), DEFAULT_PAGE);
+  const id = searchParams.get("id");
+  const initialIdFilter = id && isValidId(id) ? parseInt(id) : null;
 
   // state
-  const [idFilter, setIdFilter] = useState(searchParams.get("id") ?? "");
+  const [idFilter, setIdFilter] = useState<number | null>(initialIdFilter);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [productsWithPagination, setPorductsWithPagination] =
     useState<Pagination<Product> | null>(null);
   const [fetchStatus, setFetchStatus] = useState(FetchStatus.IDDLE);
 
   const debouncedSetIdFilter = useCallback(
-    debounce((filterId: string) => {
+    debounce((filterId: number | null) => {
       setIdFilter(filterId);
     }, 800),
     []
   );
 
-  const handleFilterChange = (idFilter: string) => {
+  const handleFilterChange = (idFilter: number | null) => {
     debouncedSetIdFilter(idFilter);
   };
 
@@ -51,7 +53,7 @@ export const useProductsWithPagination = (
     let isMounted = true;
 
     const fetchProducts = async () => {
-      if (idFilter.length <= 0) {
+      if (!idFilter) {
         try {
           const porductsWithPagination =
             await productsRepository.getProductsPagination(
@@ -79,9 +81,7 @@ export const useProductsWithPagination = (
         }
       } else {
         try {
-          const product = await productsRepository.getProductById(
-            parseInt(idFilter)
-          );
+          const product = await productsRepository.getProductById(idFilter);
 
           if (isMounted) {
             setPorductsWithPagination({
@@ -120,8 +120,8 @@ export const useProductsWithPagination = (
   */
   useEffect(() => {
     const params = new URLSearchParams();
-    if (idFilter.length > 0) {
-      params.set("id", idFilter);
+    if (idFilter) {
+      params.set("id", idFilter.toString());
     } else {
       params.set("page", currentPage.toString());
     }
