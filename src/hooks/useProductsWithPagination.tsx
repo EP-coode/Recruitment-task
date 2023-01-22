@@ -54,7 +54,12 @@ export const useProductsWithPagination = (
         try {
           const porductsWithPagination =
             await poductsRepo.getProductsPagination(currentPage, postPerPage);
-            
+
+          if (porductsWithPagination.total_pages < currentPage) {
+            setCurrentPage(porductsWithPagination.total_pages);
+            return;
+          }
+
           if (isMounted) {
             setPorductsWithPagination(porductsWithPagination);
             setFetchStatus(FetchStatus.OK);
@@ -72,15 +77,14 @@ export const useProductsWithPagination = (
         try {
           const product = await poductsRepo.getProductById(parseInt(idFilter));
 
-          setPorductsWithPagination({
-            data: [product],
-            page: 1,
-            per_page: 1,
-            total: 1,
-            total_pages: 1,
-          });
-
           if (isMounted) {
+            setPorductsWithPagination({
+              data: [product],
+              page: 1,
+              per_page: 1,
+              total: 1,
+              total_pages: 1,
+            });
             setFetchStatus(FetchStatus.OK);
             setCurrentPage(1);
           }
