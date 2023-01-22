@@ -22,7 +22,7 @@ export const useProductsWithPagination = (
   // params parsing/validation
   itemsPerPage = itemsPerPage <= 1 ? DEFAULT_ITEMS_PER_PAGE : itemsPerPage;
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialPage = parsePage(searchParams.get("page"), DEFAULT_PAGE)
+  const initialPage = parsePage(searchParams.get("page"), DEFAULT_PAGE);
 
   // state
   const [idFilter, setIdFilter] = useState(searchParams.get("id") ?? "");
@@ -54,7 +54,10 @@ export const useProductsWithPagination = (
       if (idFilter.length <= 0) {
         try {
           const porductsWithPagination =
-            await productsRepository.getProductsPagination(currentPage, itemsPerPage);
+            await productsRepository.getProductsPagination(
+              currentPage,
+              itemsPerPage
+            );
 
           if (porductsWithPagination.total_pages < currentPage) {
             setCurrentPage(porductsWithPagination.total_pages);
@@ -76,7 +79,9 @@ export const useProductsWithPagination = (
         }
       } else {
         try {
-          const product = await productsRepository.getProductById(parseInt(idFilter));
+          const product = await productsRepository.getProductById(
+            parseInt(idFilter)
+          );
 
           if (isMounted) {
             setPorductsWithPagination({
@@ -102,6 +107,10 @@ export const useProductsWithPagination = (
     };
     setFetchStatus(FetchStatus.LOADING);
     fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [currentPage, itemsPerPage, productsRepository, idFilter]);
 
   /*
