@@ -14,7 +14,7 @@ export default function ProductsTable({
   rowsPerPage = 5,
 }: {
   className?: string;
-  rowsPerPage: number;
+  rowsPerPage?: number;
 }) {
   const {
     products,
